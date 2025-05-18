@@ -1,0 +1,157 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Tech-themed color palette */
+  --radius: 0.625rem;
+
+  /* Base colors */
+  --background: #0f172a; /* Dark blue background */
+  --foreground: #e2e8f0; /* Light text */
+
+  /* Card and UI elements */
+  --card: #1e293b; /* Slightly lighter blue for cards */
+  --card-foreground: #f8fafc; /* White text for cards */
+  --popover: #1e293b;
+  --popover-foreground: #f8fafc;
+
+  /* Primary accent - purple */
+  --primary: #8b5cf6; /* Vibrant purple */
+  --primary-foreground: #ffffff;
+
+  /* Secondary accent - blue */
+  --secondary: #3b82f6; /* Bright blue */
+  --secondary-foreground: #ffffff;
+
+  /* Muted elements */
+  --muted: #334155; /* Muted slate */
+  --muted-foreground: #94a3b8; /* Muted text */
+
+  /* Accent - teal */
+  --accent: #14b8a6; /* Teal accent */
+  --accent-foreground: #ffffff;
+
+  /* Destructive - red */
+  --destructive: #ef4444; /* Error red */
+
+  /* UI elements */
+  --border: #334155; /* Border color */
+  --input: #334155; /* Input background */
+  --ring: #8b5cf6; /* Focus ring - purple */
+
+  /* Chart colors - tech-themed gradient */
+  --chart-1: #8b5cf6; /* Purple */
+  --chart-2: #3b82f6; /* Blue */
+  --chart-3: #06b6d4; /* Cyan */
+  --chart-4: #10b981; /* Emerald */
+  --chart-5: #f59e0b; /* Amber */
+}
+
+a {
+  font-weight: 500;
+  color: #8b5cf6; /* Purple links */
+  text-decoration: inherit;
+}
+a:hover {
+  color: #a78bfa; /* Lighter purple on hover */
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+button:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+button:focus,
+button:focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 2px;
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/* No dark mode - using consistent tech theme */
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Tech-themed gradient text */
+.text-gradient {
+  @apply bg-gradient-to-r from-purple-500 via-blue-500 to-teal-500 text-transparent bg-clip-text;
+}
