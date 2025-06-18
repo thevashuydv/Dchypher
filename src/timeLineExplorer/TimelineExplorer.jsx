@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import RepositoryForm from './components/RepositoryForm';
 import LoadingScreen from './components/LoadingScreen';
-import AnimatedTimelineChart from './components/AnimatedTimelineChart';
+import TimelineChart from './components/TimelineChart';
 import CommitDetails from './components/CommitDetails';
 import { analyzeRepository } from './services/apiService';
 
@@ -79,7 +79,7 @@ const TimelineExplorer = () => {
             </motion.button>
           </div>
 
-          <AnimatedTimelineChart timelineData={timelineData} />
+          <TimelineChart timelineData={timelineData} />
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}

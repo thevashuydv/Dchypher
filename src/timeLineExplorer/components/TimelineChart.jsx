@@ -1,16 +1,16 @@
-import { useRef, useEffect, useState } from 'react';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
-import { Line } from 'react-chartjs-2';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-// Register ChartJS components
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
-
-// Set default chart colors
-ChartJS.defaults.color = '#71717a'; // Default text color
+// Color coding for scores
+const getScoreColor = (score) => {
+  if (score >= 80) return 'bg-red-500 text-white';
+  if (score >= 50) return 'bg-yellow-400 text-black';
+  if (score > 0) return 'bg-blue-500 text-white';
+  return 'bg-green-500 text-white';
+};
 
 const TimelineChart = ({ timelineData }) => {
-  const chartRef = useRef(null);
+  const [selected, setSelected] = useState(null);
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   // Check for dark mode and update when it changes
@@ -33,122 +33,48 @@ const TimelineChart = ({ timelineData }) => {
     return () => observer.disconnect();
   }, []);
 
-  // Format dates for display
-  const formatDate = (timestamp) => {
-    const date = new Date(timestamp);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
-
-  // Prepare data for the chart
-  const chartData = {
-    labels: timelineData.map(item => formatDate(item.timestamp)),
-    datasets: [
-      {
-        label: 'Obfuscation Score',
-        data: timelineData.map(item => item.score),
-        borderColor: isDarkMode ? 'rgba(168, 85, 247, 0.8)' : 'rgba(79, 70, 229, 0.8)',
-        backgroundColor: isDarkMode ? 'rgba(168, 85, 247, 0.2)' : 'rgba(79, 70, 229, 0.2)',
-        borderWidth: 2,
-        tension: 0.3,
-        pointRadius: 5,
-        pointHoverRadius: 8,
-        pointBackgroundColor: isDarkMode ? 'rgba(168, 85, 247, 1)' : 'rgba(79, 70, 229, 1)',
-      },
-    ],
-  };
-
-  // Chart options
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top',
-        labels: {
-          color: isDarkMode ? '#e4e4e7' : '#3f3f46',
-        }
-      },
-      title: {
-        display: true,
-        text: 'Obfuscation Timeline',
-        color: isDarkMode ? '#e4e4e7' : '#3f3f46',
-        font: {
-          size: 16,
-          weight: 'bold'
-        }
-      },
-      tooltip: {
-        backgroundColor: isDarkMode ? '#27272a' : '#ffffff',
-        titleColor: isDarkMode ? '#e4e4e7' : '#3f3f46',
-        bodyColor: isDarkMode ? '#d4d4d8' : '#52525b',
-        borderColor: isDarkMode ? '#3f3f46' : '#e4e4e7',
-        borderWidth: 1,
-        callbacks: {
-          afterLabel: function(context) {
-            const index = context.dataIndex;
-            const item = timelineData[index];
-            return [
-              `Commit: ${item.commitHash.substring(0, 7)}`,
-              `Eval Count: ${item.metrics.evalCount}`,
-              `Short Variables: ${item.metrics.shortVarCount}`,
-              `Minified: ${item.metrics.isMinified ? 'Yes' : 'No'}`,
-            ];
-          }
-        }
-      }
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        border: {
-          color: isDarkMode ? '#3f3f46' : '#e4e4e7',
-        },
-        grid: {
-          color: isDarkMode ? '#27272a' : '#f4f4f5',
-        },
-        ticks: {
-          color: isDarkMode ? '#a1a1aa' : '#71717a',
-        },
-        title: {
-          display: true,
-          text: 'Obfuscation Score',
-          color: isDarkMode ? '#e4e4e7' : '#3f3f46',
-        },
-      },
-      x: {
-        border: {
-          color: isDarkMode ? '#3f3f46' : '#e4e4e7',
-        },
-        grid: {
-          color: isDarkMode ? '#27272a' : '#f4f4f5',
-        },
-        ticks: {
-          color: isDarkMode ? '#a1a1aa' : '#71717a',
-        },
-        title: {
-          display: true,
-          text: 'Date',
-          color: isDarkMode ? '#e4e4e7' : '#3f3f46',
-        },
-      },
-    },
-  };
+  // Sort by date ascending
+  const sorted = [...timelineData].sort((a, b) => a.timestamp - b.timestamp);
 
   return (
     <Card className="w-full">
       <CardHeader>
         <CardTitle>Obfuscation Timeline</CardTitle>
         <CardDescription>
-          Visualization of obfuscation scores over time for the selected JavaScript file
+          Each commit is shown as a step. Click a step for details.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="h-[400px]">
-          <Line ref={chartRef} data={chartData} options={options} />
+        <div className="flex flex-col gap-6 relative border-l-2 border-primary/30 pl-6">
+          {sorted.map((item, idx) => (
+            <div key={item.commitHash} className="relative group">
+              {/* Timeline dot */}
+              <div className={`absolute -left-7 top-2 w-5 h-5 rounded-full border-4 border-background shadow ${getScoreColor(item.score)} flex items-center justify-center font-bold text-xs`}>{idx+1}</div>
+              <div
+                className={`p-4 rounded-md bg-card/80 border border-border shadow transition cursor-pointer hover:bg-primary/10 ${selected === idx ? 'ring-2 ring-primary' : ''}`}
+                onClick={() => setSelected(selected === idx ? null : idx)}
+              >
+                <div className="flex items-center gap-2">
+                  <span className={`px-2 py-1 rounded ${getScoreColor(item.score)}`}>Score: {item.score}</span>
+                  <span className="text-xs text-muted-foreground">{new Date(item.timestamp).toLocaleDateString()}</span>
+                  <span className="text-xs font-mono text-muted-foreground">{item.commitHash.substring(0, 7)}</span>
+                </div>
+                {selected === idx && (
+                  <div className="mt-3 text-sm grid grid-cols-2 gap-2">
+                    <div>
+                      <span className="font-medium">Eval Count:</span> {item.metrics.evalCount}
+                    </div>
+                    <div>
+                      <span className="font-medium">Short Vars:</span> {item.metrics.shortVarCount}
+                    </div>
+                    <div>
+                      <span className="font-medium">Minified:</span> {item.metrics.isMinified ? 'Yes' : 'No'}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
       </CardContent>
     </Card>

@@ -303,28 +303,28 @@ async function tryParseStrategies(code) {
   };
 }
 
-async function formatCode(code, filePath) {
+function containsTypeScriptSyntax(code) {
+  // Simple heuristics for TS syntax
+  return /implements\s+|interface\s+|enum\s+|:\s*\w+|<\w+.*>\s*\(/.test(code);
+}
+
+async function formatCode(code, filePath = '') {
   try {
-    // Try formatting with Prettier
-    return await prettier.format(code, PRETTIER_OPTIONS);
-  } catch (error) {
-    console.error('Error formatting code:', error);
-    
-    // If Prettier fails, try with more lenient options
-    try {
-      return await prettier.format(code, {
-        ...PRETTIER_OPTIONS,
-        parser: 'babel-ts',
-        printWidth: 100,
-        semi: false,
-        singleQuote: false
-      });
-    } catch (retryError) {
-      console.error('Error in retry formatting:', retryError);
-      
-      // If all formatting attempts fail, return the original code
+    // Skip formatting if file is TS or code looks like TS
+    if (
+      filePath.endsWith('.ts') ||
+      filePath.endsWith('.tsx') ||
+      containsTypeScriptSyntax(code)
+    ) {
       return code;
     }
+    // Try to format the code with prettier
+    console.log('Formatting code with prettier');
+    return await prettier.format(code, { parser: 'babel' });
+  } catch (error) {
+    console.error('Error formatting code:', error);
+    // If formatting fails, return the original code
+    return code;
   }
 }
 
@@ -395,6 +395,31 @@ function detectModuleType(code) {
   return 'unknown';
 }
 
+async function validateAndParseCode(code, filePath) {
+  try {
+    // Step 1: Validate and clean the code (e.g., remove BOM, check binary)
+    const { cleanedCode, validationInfo } = await validateFileContent(code, filePath);
+
+    // Step 2: Try parsing the cleaned code with different strategies
+    const parseInfo = await tryParseStrategies(cleanedCode);
+
+    return {
+      cleanedCode,
+      parseInfo,
+      validationInfo
+    };
+  } catch (error) {
+    console.error('Error in validateAndParseCode:', error);
+    return {
+      cleanedCode: code,
+      parseInfo: { success: false, error: error.message },
+      validationInfo: { success: false, error: error.message }
+    };
+  }
+}
+
+exports.validateAndParseCode = validateAndParseCode;
+
 // New function to analyze code changes between commits
 exports.analyzeCodeChanges = async (oldCode, newCode, filePath) => {
   try {
@@ -404,8 +429,8 @@ exports.analyzeCodeChanges = async (oldCode, newCode, filePath) => {
     }
 
     // Validate and parse both versions
-    const { cleanedCode: cleanedOldCode, parseInfo: oldParseInfo } = await validateAndParseCode(oldCode, filePath);
-    const { cleanedCode: cleanedNewCode, parseInfo: newParseInfo } = await validateAndParseCode(newCode, filePath);
+    const { cleanedCode: cleanedOldCode, parseInfo: oldParseInfo } = await exports.validateAndParseCode(oldCode, filePath);
+    const { cleanedCode: cleanedNewCode, parseInfo: newParseInfo } = await exports.validateAndParseCode(newCode, filePath);
 
     // Analyze both versions
     const oldAnalysis = await this.analyzeCode(cleanedOldCode, filePath);
